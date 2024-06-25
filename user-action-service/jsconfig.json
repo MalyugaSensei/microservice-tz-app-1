@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "baseUrl": ".",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "target": "ES6",
+        "module": "CommonJS"
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*",
+    ]
+}

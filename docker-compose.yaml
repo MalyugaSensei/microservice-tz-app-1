@@ -1,0 +1,61 @@
+services:
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - DATABASE_URL=postgresql://administrator:12345678@postgres-users:5432/users_db
+      - RABBITMQ_URL=amqp://administrator:12345678@rabbitmq:5672
+      - SERVICE_PORT=3000
+    volumes:
+      - ./user-service:/usr/src/app
+      - /usr/src/app/node_modules
+  postgres-users:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=users_db
+      - POSTGRES_USER=administrator
+    volumes:
+      - ./postgres/users:/var/lib/postgresql/data
+  user-action-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    environment:
+      - DATABASE_URL=postgresql://administrator:12345678@postgres-user-actions:5432/actions_db
+      - RABBITMQ_URL=amqp://administrator:12345678@rabbitmq:5672
+      - SERVICE_PORT=3001
+    volumes:
+      - ./user-service:/usr/src/app
+      - /usr/src/app/node_modules
+  postgres-user-actions:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=actions_db
+      - POSTGRES_USER=administrator
+    volumes:
+      - ./postgres/actions:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=administrator
+      - RABBITMQ_DEFAULT_USER=12345678
+    valumes:
+      - ./rabbitmq:/var/lib/rabbitmq
