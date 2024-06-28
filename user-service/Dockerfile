@@ -1,10 +1,8 @@
 FROM node:20-alpine
-ENV NODE_ENV=development
+RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
-COPY package*.json .
-RUN npm install
-COPY . .
-EXPOSE 3001
-RUN chown -R node /usr/src/app
 USER node
-CMD [ "npm", "run", "start" ]
+COPY package*.json .
+RUN npm ci
+COPY . .
+CMD [ "sh", "-c", "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run start:dev:test" ]
