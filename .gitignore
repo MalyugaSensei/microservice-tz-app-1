@@ -1,6 +1,11 @@
 **/.env
+.env*
 **/package-lock.json
 **/node_modules/*
 node_modules
 **/postgress/**
+postgres
 **/rabbitmq/*
+rabbitmq
+
+**/dist/*
