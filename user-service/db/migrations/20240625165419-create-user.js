@@ -33,8 +33,8 @@ module.exports = {
         updatedAt: {
           allowNull: false,
           type: Sequelize.DATE
-        }
-      });
+        },
+      }, { transaction });
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();

@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false
     }
   }, {
+    indexes: [
+      {
+        fields: ['problems'],
+      }
+    ],
     sequelize,
     modelName: 'User',
   });
