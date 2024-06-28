@@ -1,11 +1,16 @@
 {
     "compilerOptions": {
         "checkJs": true,
-        "baseUrl": ".",
+        "baseUrl": "./",
         "sourceMap": true,
         "moduleResolution": "node",
         "target": "ES6",
         "module": "CommonJS"
+    },
+    "typeAcquisition": {
+        "include": [
+            "jest"
+        ]
     },
     "exclude": [
         "node_modules",

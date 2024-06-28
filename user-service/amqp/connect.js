@@ -30,7 +30,8 @@ const connectMQ = async () => {
     } catch (error) {
         console.error('Cannot connect to RabbitMQ server. reconnecting...');
         console.error(error)
-        setTimeout(connectMQ, 5000)
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        return connectMQ()
     }
 }
 
@@ -49,7 +50,14 @@ const getChannel = async () => {
     return channel;
 }
 
+const closeConnection = async () => {
+    if (connection) {
+        await connection.close();
+    }
+}
+
 module.exports = {
     connectMQ,
-    getChannel
+    getChannel,
+    closeConnection
 }

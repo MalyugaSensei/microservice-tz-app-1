@@ -1,4 +1,4 @@
-const { getChannel } = require("amqp/connect");
+const { getChannel } = require("../connect");
 
 const sendDataToQueue = async (queueName, data) => {
     const channel = await getChannel();

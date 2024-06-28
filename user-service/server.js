@@ -1,37 +1,42 @@
-const express = require('express')
-const cors = require('cors')
+require('dotenv').config()
+
 const { sequelize } = require('./db/models')
-const userRouter = require('./routes/users')
-const { connectMQ } = require('amqp/connect')
+const { connectMQ } = require('./amqp/connect')
+const app = require('./app')
 
-const app = express()
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(cors({
-    origin: '*',
-    credentials: true
-}))
+const startApp = async () => {
+    try {
+        await sequelize.authenticate()
+        console.log('\nConnection to DB has been established successfully.\n')
+    } catch (error) {
+        console.error('\nUnable to connect to the database:\n', error)
+    }
 
-app.use('/users', userRouter)
+    try {
+        await connectMQ()
+            .then(({ channel }) => {
+                channel.assertQueue("user-actions", { durable: true })
+            })
+            .catch(error => {
+                console.error('Unable to connect to RabbitMQ:', error)
+            })
+        console.log('Connection to RabbitMQ has been established successfully.')
+    } catch (error) {
+        console.error('\nUnable to connect to RabbitMQ:\n', error)
+    }
 
-try {
-    sequelize.authenticate()
-    console.log('Connection has been established successfully.')
-
-    connectMQ()
-        .then(({ channel }) => {
-            channel.assertQueue("user-actions", { durable: true })
+    try {
+        app.listen(port, () => {
+            console.log(`\nExample app listening at http://localhost:${port}\n`)
         })
-    console.log('Connection to RabbitMQ has been established successfully.')
-
-    app.listen(port, () => {
-        console.log(`Example app listening at http://localhost:${port}`)
-    })
-} catch (error) {
-    console.error('Unable to start App:', error)
+    } catch (error) {
+        console.error('\nUnable to start App:\n', error)
+    }
 }
+
+startApp()
 
 
 

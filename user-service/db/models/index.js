@@ -6,20 +6,32 @@ const { Sequelize, DataTypes } = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+const config = require('../config/config.js')[env];
 const db = {}
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL must be set');
+if (!config.url) {
+  throw new Error('Invalid database URL');
 }
 
-db.sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
+db.sequelize = new Sequelize(config.url, {
+  dialect: config.dialect,
   pool: {
     max: 10,
     min: 0,
     acquire: 30000,
     idle: 10000
+  },
+  retry: {
+    match: [
+      /SequelizeConnectionError/,
+      /SequelizeConnectionRefusedError/,
+      /SequelizeHostNotFoundError/,
+      /SequelizeHostNotReachableError/,
+      /SequelizeInvalidConnectionError/,
+      /SequelizeConnectionTimedOutError/
+    ],
+    max: 5,
+    timeout: 15000
   }
 });
 
