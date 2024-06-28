@@ -5,7 +5,7 @@ let channel;
 /** @type { import('amqplib').Connection } */
 let connection;
 
-const connectMQ = async (queueName) => {
+const connectMQ = async () => {
     try {
         if (!connection) {
             connection = await amqp.connect(process.env.RABBITMQ_URL)
@@ -31,7 +31,8 @@ const connectMQ = async (queueName) => {
     } catch (error) {
         console.error('Cannot connect to RabbitMQ server. reconnecting...');
         console.error(error)
-        setTimeout(connectMQ, 5000)
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        return connectMQ()
     }
 }
 
@@ -50,7 +51,14 @@ const getChannel = async () => {
     return channel;
 }
 
+const closeConnection = async () => {
+    if (connection) {
+        await connection.close();
+    }
+}
+
 module.exports = {
     connectMQ,
-    getChannel
+    getChannel,
+    closeConnection
 }
