@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -7,6 +7,10 @@ export class UserController {
 
   @Patch('no-problem')
   updateNoProblem() {
-    return this.userService.updateNoProblem();
+    try {
+      return await this.userService.updateNoProblem();
+    } catch (error) {
+      throw new HttpException('Failed to update', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
