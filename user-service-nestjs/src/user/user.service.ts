@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Transaction } from 'sequelize';
 import { USER_REPOSITORY } from 'src/user/constants';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class UserService {
+  private readonly batchSize = 10000;
+  private readonly numberOfWorkers = 5;
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: typeof User,
@@ -21,15 +24,19 @@ export class UserService {
       }
     }
     const transaction = await this.userRepository.sequelize?.transaction()
-    try {
-      const batchSize = 10000;
-      const numberOfWorkers = 5;
 
-      const updateBatch = async (offset: number) => {
+    if (!transaction) {
+      return {
+        error: 'Transaction error'
+      }
+    }
+
+    try {
+      const updateBatch = async (offset: number, transaction: Transaction) => {
         while (true) {
           const users = await this.userRepository.findAll({
             where: { problems: true },
-            limit: batchSize,
+            limit: this.batchSize,
             offset: offset
           });
 
@@ -44,17 +51,19 @@ export class UserService {
             { transaction, where: { id: userIds } }
           );
 
-          offset += batchSize * numberOfWorkers;
+          offset += this.batchSize * this.numberOfWorkers;
         }
       };
 
       const workers = [];
-      for (let i = 0; i < numberOfWorkers; i++) {
-        workers.push(updateBatch(i * batchSize));
+      for (let i = 0; i < this.numberOfWorkers; i++) {
+        workers.push(updateBatch(i * this.batchSize, transaction));
       }
       await Promise.all(workers);
-
+      await transaction?.commit()
     } catch (error) {
+      console.log(error)
+      await transaction?.rollback()
       return {
         error
       }
