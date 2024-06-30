@@ -1,4 +1,4 @@
-import { Table, Column, Model } from "sequelize-typescript";
+import { Table, Column, Model, DataType } from "sequelize-typescript";
 @Table
 export class User extends Model {
     @Column
@@ -13,6 +13,6 @@ export class User extends Model {
     @Column
     gender: string;
 
-    @Column
+    @Column(DataType.BOOLEAN)
     problems: boolean
 }
